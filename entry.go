@@ -19,38 +19,23 @@ func main() {
 	fmt.Println("Welcome to cabby.\nWe ply the following destinations: ")
 	fmt.Println(cabbyDestinations)
 
-	pickUpDest := bufio.NewReader(os.Stdin)
-	fmt.Print("Enter your pickup destination:")
-	pud, _ := pickUpDest.ReadString('\n')
-
-	pickUpPoint := strings.ToLower(strings.Trim(pud, " \r\n"))
-	drop.SetPickUpPoint(pickUpPoint)
-	isPudValid := drop.DestinationIsValid(pickUpPoint)
-	destValid(isPudValid, 1)
-
-	dropOffDest := bufio.NewReader(os.Stdin)
-	fmt.Print("Enter your drop off destination:")
-	dod, _ := dropOffDest.ReadString('\n')
-
-	dropOffPoint := strings.ToLower(strings.Trim(dod, " \r\n"))
-	isDodValid := drop.DestinationIsValid(dropOffPoint)
+	pickUpPoint, dropOffPoint := start(drop)
 
 	drop.SetDropOffPoint(dropOffPoint)
-	destValid(isDodValid, 2)
-
+	drop.SetPickUpPoint(pickUpPoint)
 	drop.SetStartTime(time.Now())
 	tFare := drop.CalculateFare(pickUpPoint, dropOffPoint)
 
 	tFare = (math.Floor(tFare*100) / 100)
 	drop.SetTfare(tFare)
 
-	fmt.Printf("It will cost ₦%.2f to go from %v to %v\n", tFare, pickUpPoint, dropOffPoint)
+	fmt.Printf("\nIt will cost ₦%.2f to go from %v to %v\n", tFare, pickUpPoint, dropOffPoint)
 	time.Sleep(10 * time.Second)
 	val, amountToPay := collectFare(drop)
 
 	if val == 1 {
 		change := amountToPay - tFare
-		fmt.Printf("Here's your change of ₦%.2f\n", change)
+		fmt.Printf("\nHere's your change of ₦%.2f\n", change)
 	}
 
 	fmt.Println("I would appreciate a tip...\n")
@@ -64,11 +49,11 @@ func main() {
 
 func destValid(val bool, spot int) {
 	if val == false && spot == 1 {
-		fmt.Println("Invalid Pickup Destination...\n")
+		fmt.Println("\nInvalid Pickup Destination...")
 		fmt.Println("Bye laters...")
 		os.Exit(1)
 	} else if val == false && spot == 2 {
-		fmt.Println("Invalid Dropoff Destination\n...")
+		fmt.Println("\nInvalid Dropoff Destination...")
 		fmt.Println("Bye laters...")
 		os.Exit(1)
 	}
@@ -83,7 +68,7 @@ func collectFare(drop myapp.Cabby) (int, float64) {
 	for i < 0 {
 		_, err := fmt.Scan(&amountToPay)
 		if err != nil {
-			fmt.Println("You entered an invalid value...")
+			fmt.Println("\nYou entered an invalid value...")
 			fmt.Println("Re-enter amount to pay:")
 			continue
 		}
@@ -98,7 +83,7 @@ func collectFare(drop myapp.Cabby) (int, float64) {
 		count++
 
 		if count%5 == 0 {
-			fmt.Println("You'll be reported to the police if you keep on trying to pay less than what you owe\n")
+			fmt.Println("\nYou'll be reported to the police if you keep on trying to pay less than what you owe\n")
 			fmt.Println("Re-enter amount to pay:")
 			continue
 		}
@@ -133,4 +118,43 @@ func requestTip(fare float64) (float64, string) {
 		}
 	}
 	return (math.Floor(tip*100) / 100), msg
+}
+
+func start(drop myapp.Cabby) (string, string) {
+	i := 0
+	itr := 1
+	var pickUpPoint, dropOffPint string
+	for i == 0 {
+		pickUpDest := bufio.NewReader(os.Stdin)
+		fmt.Print("Enter your pickup destination:")
+
+		pud, _ := pickUpDest.ReadString('\n')
+		pickUpPoint = strings.ToLower(strings.Trim(pud, " \r\n"))
+		isPudValid := drop.DestinationIsValid(pickUpPoint)
+		destValid(isPudValid, 1)
+
+		dropOffDest := bufio.NewReader(os.Stdin)
+		fmt.Print("Enter your drop off destination:")
+
+		dod, _ := dropOffDest.ReadString('\n')
+		dropOffPint = strings.ToLower(strings.Trim(dod, " \r\n"))
+		isDodValid := drop.DestinationIsValid(dropOffPint)
+		destValid(isDodValid, 2)
+		itr++
+
+		if itr%5 == 0 {
+			fmt.Println("\nIt looks like you came here to play.\nHave a good day...\n")
+			fmt.Println("Bye laters...")
+			os.Exit(1)
+		}
+
+		if pickUpPoint == dropOffPint {
+			fmt.Println("\nDrop off point and pick up point cannot be same...\n")
+			i = 0
+			continue
+		} else {
+			i = -1
+		}
+	}
+	return pickUpPoint, dropOffPint
 }
