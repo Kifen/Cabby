@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cabby/myapp"
+	"github.com/kifen/cabby/myapp"
 )
 
 func main() {
